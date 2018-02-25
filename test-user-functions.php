@@ -85,6 +85,7 @@ function test_user_interface() {
 
 	$get_male_or_female  = get_option('male_or_female');
 	$get_number_of_users = get_option('user_number');
+	$get_hashed_pass = get_option('hashed_password');
 
 	//Form
 	echo '<div class="wrap">';
@@ -93,8 +94,12 @@ function test_user_interface() {
 
 		<form class="generate" method="post">
 			<div>
-				Male <input type="radio" class="gender" name="gender" value="male" <?php if($get_male_or_female == 'male' || $_POST['gender'] == 'male'){echo 'checked';} ?>>
-				Female <input type="radio" class="gender" name="gender" value="female" <?php if($get_male_or_female == 'female' || $_POST['gender'] == 'female'){echo 'checked';} ?>>
+				Male <input type="radio" class="gender" name="gender" value="male" <?php if($get_male_or_female == 'male'){echo 'checked';} ?>>
+				Female <input type="radio" class="gender" name="gender" value="female" <?php if($get_male_or_female == 'female'){echo 'checked';} ?>>
+			</div>
+			<br>
+			<div>
+				Hash Password <input type="radio" class="hash_pass" name="hash_pass" value="1" <?php if($get_hashed_pass == '1'){echo 'checked';} ?>>
 			</div>
 			<br>
 			<div>
@@ -102,7 +107,8 @@ function test_user_interface() {
 			</div>
 			<br>
 			<input type="submit" value="Generate" class="generate_butt" name="generate_info">
-			<input type="submit" value="Delete All Users" class="delete_all_butt" name="delete_all_users">
+			<input type="submit" value="Clear All" class="clear_all_butt" name="clear_all">
+			<input type="submit" value="Delete All Created Users" class="delete_all_butt" name="delete_all_users">
 		</form>
 	<?php
 	echo '</div>';
@@ -114,7 +120,13 @@ function test_user_interface() {
 	elseif ($_POST['gender'] == 'female') {
 		update_option('male_or_female', 'female');
 	}
-	update_option('user_number', $_POST['number_of_users']);
+
+    if (isset($_POST['clear_all'])) {
+    	update_option('user_number', '');
+		update_option('hashed_password', '');
+		update_option('male_or_female', '');
+		update_option('male_or_female', '');
+    }
 }
 
 
@@ -169,7 +181,12 @@ function generate_user_password($user_name) {
         $n = rand(0, $alphaLength);
         $pass[] = $alphabet[$n];
     }
-    return $user_name . '_' . implode($pass);
+    if ($_POST['hash_pass']) {
+    	return md5($user_name . '_' . implode($pass));
+    }
+    else {
+    	return $user_name . '_' . implode($pass);
+    }
 }
 
 
