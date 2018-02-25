@@ -14,6 +14,7 @@ Navigation:
 3. Generate User Name
 4. Generate User Email
 5. Generate User Password
+6. Insert User
 */
 
 // --- install/uninstall, activate, deactivate plugin ---- //
@@ -132,7 +133,6 @@ global $wpdb;
 		}
 		$key = array_rand($male_names_array, 1);
 		$random_male_name = $male_names_array[$key];
-		return $random_male_name;
 	}
 
 	elseif (isset($_POST['generate_info']) && $_POST['gender'] == 'female') {
@@ -146,24 +146,21 @@ global $wpdb;
 			}
 		}
 		$key = array_rand($female_names_array, 1);
-		$random_female_name = $female_names_array[$key];
-		return $random_female_name;		
+		$random_female_name = $female_names_array[$key];	
 	}
+	return $random_male_name . $random_female_name;
 }
+$user_name = generate_user_name();
 
 
 // --- Generate User Email ---- //
-function generate_user_email() {
-
-	$user_name = generate_user_name();
+function generate_user_email($user_name) {
 	return $user_name . '@' . strtolower($user_name) . 'test.com';
 }
 
 
-// --- Generate User Password ---- //
-function generate_user_password() {
-
-	$user_name = generate_user_name();
+// --- Generate User Password ---- // //does user want hashed passwords or not, implement functionality later
+function generate_user_password($user_name) {
     $alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
     $pass = array();
     $alphaLength = strlen($alphabet) - 1;
@@ -173,4 +170,24 @@ function generate_user_password() {
     }
     return $user_name . '_' . implode($pass);
 }
+
+
+// --- Insert User ---- //
+function insert_user($user_name, $user_email, $user_password) {
+global $wpdb;
+
+	if (isset($_POST['generate_info'])) {
+		$user_email = generate_user_email($user_name);
+		$user_password = generate_user_password($user_name);
+
+		$wpdb->insert('wp_users', array(
+		    'user_login'  =>  $user_name,
+		    'user_pass'   =>  $user_password,
+		    'user_nicename' => $user_name,
+		    'display_name' => $user_name,
+		    'user_email' => $user_email
+		));
+	}		
+}
+insert_user($user_name, generate_user_email($user_name), generate_user_password($user_name));
 ?>
