@@ -7,19 +7,25 @@ Version: 1.0
 Author: Stefan Vujic
 Author URI: https://imstefan.co.uk/
 License: GPLv2 or later 
+
+Navigation:
+1. install/uninstall, activate, deactivate plugin
+2. Admin interface
 */
 
+// --- install/uninstall, activate, deactivate plugin ---- //
 
 function test_user_activation() {
 global $wpdb;
 
-	include 'male-first-names.php';
-	include 'female-first-names.php';
 	$table_name = 'test_user_names';
 
 	//check if table exists then if not, create it and insert data
 	if($wpdb->get_var("SHOW TABLES LIKE '$table_name'") != $table_name) {
-		
+
+		include 'male-first-names.php';
+		include 'female-first-names.php';
+
 		//create table
 		$charset_collate = $wpdb->get_charset_collate();
 		$sql = "CREATE TABLE $table_name (
@@ -30,8 +36,8 @@ global $wpdb;
 		  PRIMARY KEY  (id)
 		) $charset_collate;";
 
-		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-		dbDelta( $sql );
+		require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+		dbDelta($sql);
 
 		//add data
 		foreach ($local_male_names_array as $male_name_key => $male_name) {
@@ -52,10 +58,58 @@ global $wpdb;
 }
 register_activation_hook(__FILE__, 'test_user_activation');
 
-function my_plugin_remove_database() {
+function test_user_remove_database() {
 global $wpdb;
     $table_name = 'test_user_names';
     $sql = "DROP TABLE IF EXISTS $table_name";
     $wpdb->query($sql);
 }
-register_deactivation_hook( __FILE__, 'my_plugin_remove_database' );
+register_deactivation_hook(__FILE__, 'test_user_remove_database');
+
+
+// --- Admin interface ---- //
+
+function test_user_menu_item() {
+	add_options_page('WP Test User', 'WP Test User', 'manage_options', 'wp-test-user_slug', 'test_user_interface');
+}
+add_action( 'admin_menu', 'test_user_menu_item' );
+
+function test_user_interface() {
+
+	if ( !current_user_can( 'manage_options' ) )  {
+		wp_die(__( 'You do not have sufficient permissions to access this page.'));
+	}
+
+	$get_male_or_female  = get_option('male_or_female');
+	$get_number_of_users = get_option('user_number');
+
+	//Form
+	echo '<div class="wrap">';
+	?>
+		<h1 style="padding-bottom: 30px;">WP Test User</h1>
+
+		<form class="generate" method="post">
+			<div>
+				Male <input type="radio" class="gender" name="gender" value="male" <?php if($get_male_or_female == 'male'){echo 'checked';} ?>>
+				Female <input type="radio" class="gender" name="gender" value="female" <?php if($get_male_or_female == 'female'){echo 'checked';} ?>>
+			</div>
+			<br>
+			<div>
+				Number Of Users <input type="number" class="user_number" name="number_of_users" value="<?php echo $get_number_of_users ?>">
+			</div>
+			<br>
+			<input type="submit" value="generate" class="generate_butt" name="generate_info">
+		</form>
+	<?php
+	echo '</div>';
+
+	//Update options
+	if ($_POST['gender'] == 'male') {
+		update_option('male_or_female', 'male');
+	}
+	elseif ($_POST['gender'] == 'female') {
+		update_option('male_or_female', 'female');
+	}
+	update_option('user_number', 'female');
+}
+?>
