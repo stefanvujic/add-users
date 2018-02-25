@@ -11,10 +11,9 @@ License: GPLv2 or later
 Navigation:
 1. install/uninstall, activate, deactivate plugin
 2. Admin interface
-3. Generate User
-	- User Name
-	- User Email
-	- User Password
+3. Generate User Name
+4. Generate User Email
+5. Generate User Password
 */
 
 // --- install/uninstall, activate, deactivate plugin ---- //
@@ -92,12 +91,12 @@ function test_user_interface() {
 
 		<form class="generate" method="post">
 			<div>
-				Male <input type="radio" class="gender" name="gender" value="male" <?php if($get_male_or_female == 'male'){echo 'checked';} ?>>
-				Female <input type="radio" class="gender" name="gender" value="female" <?php if($get_male_or_female == 'female'){echo 'checked';} ?>>
+				Male <input type="radio" class="gender" name="gender" value="male" <?php if($get_male_or_female == 'male' || $_POST['gender'] == 'male'){echo 'checked';} ?>>
+				Female <input type="radio" class="gender" name="gender" value="female" <?php if($get_male_or_female == 'female' || $_POST['gender'] == 'female'){echo 'checked';} ?>>
 			</div>
 			<br>
 			<div>
-				Number Of Users <input type="number" class="user_number" name="number_of_users" value="<?php echo $get_number_of_users ?>">
+				Number Of Users <input type="number" class="user_number" name="number_of_users" value="<?php if(!isset($_POST['number_of_users'])){echo $get_number_of_users;} else{echo $_POST['number_of_users'];} ?>">
 			</div>
 			<br>
 			<input type="submit" value="generate" class="generate_butt" name="generate_info">
@@ -116,8 +115,8 @@ function test_user_interface() {
 }
 
 
-// --- Generate User ---- //
-function generate_user() {
+// --- Generate User Name ---- //
+function generate_user_name() {
 global $wpdb;
 
 	//User Name
@@ -133,6 +132,7 @@ global $wpdb;
 		}
 		$key = array_rand($male_names_array, 1);
 		$random_male_name = $male_names_array[$key];
+		return $random_male_name;
 	}
 
 	elseif (isset($_POST['generate_info']) && $_POST['gender'] == 'female') {
@@ -146,8 +146,31 @@ global $wpdb;
 			}
 		}
 		$key = array_rand($female_names_array, 1);
-		$random_female_name = $female_names_array[$key];		
+		$random_female_name = $female_names_array[$key];
+		return $random_female_name;		
 	}
 }
-generate_user();
+
+
+// --- Generate User Email ---- //
+function generate_user_email() {
+
+	$user_name = generate_user_name();
+	return $user_name . '@' . strtolower($user_name) . 'test.com';
+}
+
+
+// --- Generate User Password ---- //
+function generate_user_password() {
+
+	$user_name = generate_user_name();
+    $alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
+    $pass = array();
+    $alphaLength = strlen($alphabet) - 1;
+    for ($i = 0; $i < 8; $i++) {
+        $n = rand(0, $alphaLength);
+        $pass[] = $alphabet[$n];
+    }
+    return $user_name . '_' . implode($pass);
+}
 ?>
