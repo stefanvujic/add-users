@@ -150,7 +150,6 @@ global $wpdb;
 	}
 	return $random_male_name . $random_female_name;
 }
-$user_name = generate_user_name();
 
 
 // --- Generate User Email ---- //
@@ -189,5 +188,8 @@ global $wpdb;
 		));
 	}		
 }
-insert_user($user_name, generate_user_email($user_name), generate_user_password($user_name));
+for ($i=0; $i < $_POST['number_of_users']; $i++) {
+	$user_name = generate_user_name();
+	insert_user($user_name, generate_user_email($user_name), generate_user_password($user_name));
+}
 ?>
