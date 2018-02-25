@@ -14,7 +14,8 @@ Navigation:
 3. Generate User Name
 4. Generate User Email
 5. Generate User Password
-6. Insert User
+6. Insert Users
+7. Delete Users
 */
 
 // --- install/uninstall, activate, deactivate plugin ---- //
@@ -100,7 +101,8 @@ function test_user_interface() {
 				Number Of Users <input type="number" class="user_number" name="number_of_users" value="<?php if(!isset($_POST['number_of_users'])){echo $get_number_of_users;} else{echo $_POST['number_of_users'];} ?>">
 			</div>
 			<br>
-			<input type="submit" value="generate" class="generate_butt" name="generate_info">
+			<input type="submit" value="Generate" class="generate_butt" name="generate_info">
+			<input type="submit" value="Delete All Users" class="delete_all_butt" name="delete_all_users">
 		</form>
 	<?php
 	echo '</div>';
@@ -171,7 +173,7 @@ function generate_user_password($user_name) {
 }
 
 
-// --- Insert User ---- //
+// --- Insert Users ---- //
 function insert_user($user_name, $user_email, $user_password) {
 global $wpdb;
 
@@ -191,5 +193,27 @@ global $wpdb;
 for ($i=0; $i < $_POST['number_of_users']; $i++) {
 	$user_name = generate_user_name();
 	insert_user($user_name, generate_user_email($user_name), generate_user_password($user_name));
+}
+
+
+// --- Delete Users ---- //
+function delete_created_users() {
+global $wpdb;
+
+	$get_all_first_names = $wpdb->get_results('SELECT user_name FROM test_user_names WHERE name_type = "firstname"');
+
+	$user_id_array = array();
+	foreach ($get_all_first_names as $first_name_key => $first_name) {
+		$get_matched_user_id = $wpdb->get_results("SELECT ID FROM wp_users WHERE display_name = '$first_name->user_name'");
+		if (!empty($get_matched_user_id[0]->ID)) {
+			array_push($user_id_array, $get_matched_user_id[0]->ID);
+		}
+	}
+	foreach ($user_id_array as $user_id_key => $user_id) {
+		$wpdb->delete('wp_users', array( 'ID' => $user_id ));
+	}
+}
+if (isset($_POST['delete_all_users'])) {
+	delete_created_users();
 }
 ?>
