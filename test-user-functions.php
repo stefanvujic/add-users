@@ -82,10 +82,11 @@ function test_user_interface() {
 	if ( !current_user_can( 'manage_options' ) )  {
 		wp_die(__( 'You do not have sufficient permissions to access this page.'));
 	}
+    if (isset($_POST['clear_all'])) {
+    	update_option('user_number', '');
+    }
 
-	$get_male_or_female  = get_option('male_or_female');
 	$get_number_of_users = get_option('user_number');
-	$get_hashed_pass = get_option('hashed_password');
 
 	//Form
 	echo '<div class="wrap">';
@@ -94,12 +95,12 @@ function test_user_interface() {
 
 		<form class="generate" method="post">
 			<div>
-				Male <input type="radio" class="gender" name="gender" value="male" <?php if($get_male_or_female == 'male'){echo 'checked';} ?>>
-				Female <input type="radio" class="gender" name="gender" value="female" <?php if($get_male_or_female == 'female'){echo 'checked';} ?>>
+				Male <input type="radio" class="gender" name="gender" value="male" <?php if($_POST['gender'] == 'male'){echo 'checked';} elseif(isset($_POST['clear_all'])){echo "";}?>>
+				Female <input type="radio" class="gender" name="gender" value="female" <?php if($_POST['gender'] == 'female'){echo 'checked';} elseif(isset($_POST['clear_all'])){echo "";}?>>
 			</div>
 			<br>
 			<div>
-				Hash Password <input type="radio" class="hash_pass" name="hash_pass" value="1" <?php if($get_hashed_pass == '1'){echo 'checked';} ?>>
+				Hash Password <input type="radio" class="hash_pass" name="hash_pass" <?php if(isset($_POST['hash_pass'])){echo 'checked';}elseif(isset($_POST['clear_all'])){echo "";} ?>>
 			</div>
 			<br>
 			<div>
@@ -113,20 +114,7 @@ function test_user_interface() {
 	<?php
 	echo '</div>';
 
-	//Update options
-	if ($_POST['gender'] == 'male') {
-		update_option('male_or_female', 'male');
-	}
-	elseif ($_POST['gender'] == 'female') {
-		update_option('male_or_female', 'female');
-	}
-
-    if (isset($_POST['clear_all'])) {
-    	update_option('user_number', '');
-		update_option('hashed_password', '');
-		update_option('male_or_female', '');
-		update_option('male_or_female', '');
-    }
+	update_option('user_number', $_POST['number_of_users']);
 }
 
 
@@ -162,7 +150,21 @@ global $wpdb;
 		$key = array_rand($female_names_array, 1);
 		$random_female_name = $female_names_array[$key];	
 	}
-	return $random_male_name . $random_female_name;
+	elseif (isset($_POST['generate_info']) && !isset($_POST['gender'])) {
+
+		$get_all_names = $wpdb->get_results('SELECT user_name FROM test_user_names WHERE name_type = "firstname"');
+
+		$all_names_array = array();
+		foreach ($get_all_names as $all_name_key1 => $all_name1) {
+			foreach ($all_name1 as $all_name_key2 => $all_name) {
+				array_push($all_names_array, $all_name);
+			}
+		}
+		$key = array_rand($all_names_array, 1);
+		$no_gender_picked = $all_names_array[$key];	
+	}
+
+	return $random_male_name . $random_female_name . $no_gender_picked;
 }
 
 
@@ -189,8 +191,8 @@ function generate_user_password($user_name) {
     }
 }
 
-
 // --- Insert Users ---- //
+echo '<div style="">';
 function insert_user($user_name, $user_email, $user_password) {
 global $wpdb;
 
@@ -205,12 +207,20 @@ global $wpdb;
 		    'display_name' => $user_name,
 		    'user_email' => $user_email
 		));
-	}		
+	}			
 }
+echo '</div>';
+$file_output = array();
 for ($i=0; $i < $_POST['number_of_users']; $i++) {
+
 	$user_name = generate_user_name();
-	insert_user($user_name, generate_user_email($user_name), generate_user_password($user_name));
+	$user_email = generate_user_email($user_name);
+	$user_password = generate_user_password($user_name);
+
+	array_push($file_output, $i . '. user name: '.$user_name."\r\n".'   user email: '.$user_email."\r\n".'   user password: '.$user_password."\r\n \r\n");
+	insert_user($user_name, $user_email, $user_password);
 }
+file_put_contents("../wp-content/plugins/wp-test-user/newfile.txt", $file_output);
 
 
 // --- Delete Users ---- //
