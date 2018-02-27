@@ -1,4 +1,4 @@
-wp-test-user
+WP Test User
 
 A lightweight Wordpress plugin for generating test users. 
 
