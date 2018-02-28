@@ -16,6 +16,7 @@ Navigation:
 5. Generate User Password
 6. Insert Users
 7. Delete Users
+8. Write Users To File
 */
 
 // --- install/uninstall, activate, deactivate plugin ---- //
@@ -46,16 +47,16 @@ global $wpdb;
 		//add data
 		foreach ($local_male_names_array as $male_name_key => $male_name) {
 			$wpdb->insert('test_user_names', array(
-			    'user_name' => $male_name,
-			    'user_gender' => 'male',
-			    'name_type' => 'firstname'
+			    'user_name'   =>  $male_name,
+			    'user_gender' =>  'male',
+			    'name_type'   =>  'firstname'
 			));
 		}
 		foreach ($local_female_names_array as $female_name_key => $female_name) {
 			$wpdb->insert('test_user_names', array(
-			    'user_name' => $female_name,
-			    'user_gender' => 'female',
-			    'name_type' => 'firstname'
+			    'user_name'   =>  $female_name,
+			    'user_gender' =>  'female',
+			    'name_type'   =>  'firstname'
 			));
 		}			
 	}	
@@ -95,16 +96,20 @@ function test_user_interface() {
 
 		<form class="generate" method="post">
 			<div>
-				Male <input type="radio" class="gender" name="gender" value="male" <?php if($_POST['gender'] == 'male'){echo 'checked';} elseif(isset($_POST['clear_all'])){echo "";}?>>
-				Female <input type="radio" class="gender" name="gender" value="female" <?php if($_POST['gender'] == 'female'){echo 'checked';} elseif(isset($_POST['clear_all'])){echo "";}?>>
+				Male <input type="checkbox" class="gender" name="gender" value="male" <?php if($_POST['gender'] == 'male' && !isset($_POST['clear_all'])){echo 'checked';} ?>>
+				Female <input type="checkbox" class="gender" name="gender" value="female" <?php if($_POST['gender'] == 'female' && !isset($_POST['clear_all'])){echo 'checked';} ?>>
 			</div>
 			<br>
 			<div>
-				Hash Password <input type="radio" class="hash_pass" name="hash_pass" <?php if(isset($_POST['hash_pass'])){echo 'checked';}elseif(isset($_POST['clear_all'])){echo "";} ?>>
+				Hash Password <input type="checkbox" class="hash_pass" name="hash_pass" <?php if(isset($_POST['hash_pass']) && !isset($_POST['clear_all'])){echo 'checked';} ?>>
 			</div>
 			<br>
 			<div>
-				Number Of Users <input type="number" class="user_number" name="number_of_users" value="<?php if(!isset($_POST['number_of_users'])){echo $get_number_of_users;} else{echo $_POST['number_of_users'];} ?>">
+				Number Of Users <input type="number" class="user_number" name="number_of_users" value="<?php if(!isset($_POST['number_of_users']) && !isset($_POST['clear_all'])){echo $get_number_of_users;} ?>">
+			</div>
+			<br>
+			<div>
+				Export Users <input type="checkbox" class="export" name="export_users" <?php if(isset($_POST['export_users']) && !isset($_POST['clear_all'])){echo 'checked';} ?>>
 			</div>
 			<br>
 			<input type="submit" value="Generate" class="generate_butt" name="generate_info">
@@ -150,6 +155,7 @@ global $wpdb;
 		$key = array_rand($female_names_array, 1);
 		$random_female_name = $female_names_array[$key];	
 	}
+
 	elseif (isset($_POST['generate_info']) && !isset($_POST['gender'])) {
 
 		$get_all_names = $wpdb->get_results('SELECT user_name FROM test_user_names WHERE name_type = "firstname"');
@@ -174,7 +180,7 @@ function generate_user_email($user_name) {
 }
 
 
-// --- Generate User Password ---- // //does user want hashed passwords or not, implement functionality later
+// --- Generate User Password ---- //
 function generate_user_password($user_name) {
     $alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
     $pass = array();
@@ -183,16 +189,14 @@ function generate_user_password($user_name) {
         $n = rand(0, $alphaLength);
         $pass[] = $alphabet[$n];
     }
-    if ($_POST['hash_pass']) {
+    if ($_POST['hash_pass'] && $_POST['export_users']) {
     	return md5($user_name . '_' . implode($pass));
-    }
-    else {
+    }else {
     	return $user_name . '_' . implode($pass);
     }
 }
 
 // --- Insert Users ---- //
-echo '<div style="">';
 function insert_user($user_name, $user_email, $user_password) {
 global $wpdb;
 
@@ -201,15 +205,15 @@ global $wpdb;
 		$user_password = generate_user_password($user_name);
 
 		$wpdb->insert('wp_users', array(
-		    'user_login'  =>  $user_name,
-		    'user_pass'   =>  $user_password,
-		    'user_nicename' => $user_name,
-		    'display_name' => $user_name,
-		    'user_email' => $user_email
+		    'user_login'  	=>  $user_name,
+		    'user_pass'     =>  $user_password,
+		    'user_nicename' =>  $user_name,
+		    'display_name'  =>  $user_name,
+		    'user_email'    =>  $user_email
 		));
 	}			
 }
-echo '</div>';
+
 $file_output = array();
 for ($i=0; $i < $_POST['number_of_users']; $i++) {
 
@@ -217,13 +221,31 @@ for ($i=0; $i < $_POST['number_of_users']; $i++) {
 	$user_email = generate_user_email($user_name);
 	$user_password = generate_user_password($user_name);
 
+	// --- Write Users To File ---- //
 	array_push($file_output, $i . '. user name: '.$user_name."\r\n".'   user email: '.$user_email."\r\n".'   user password: '.$user_password."\r\n \r\n");
 	insert_user($user_name, $user_email, $user_password);
 }
-file_put_contents("../wp-content/plugins/wp-test-user/newfile.txt", $file_output);
+if(isset($_POST['export_users']) && isset($_POST['generate_info'])) {
 
+	$timestamp = date("Y-m-d", time());
 
-// --- Delete Users ---- //
+	file_put_contents('../wp-content/plugins/wp-test-user/wp-test-users_'.$timestamp.'.txt', $file_output);
+	// Process download
+	$filepath = '../wp-content/plugins/wp-test-user/wp-test-users_'.$timestamp.'.txt';
+    if(file_exists($filepath)) {
+        header('Content-Description: Wp Uest User Output');
+        header('Content-Type: application/octet-stream');
+        header('Content-Disposition: attachment; filename="'.basename($filepath).'"');
+        header('Expires: 0');
+        header('Cache-Control: must-revalidate');
+        header('Pragma: public');
+        flush();
+        readfile($filepath);
+        exit;
+    }
+}
+
+// ---- Delete Users ---- //
 function delete_created_users() {
 global $wpdb;
 

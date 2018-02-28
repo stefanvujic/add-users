@@ -11,7 +11,8 @@ Features:
 - Email(based on name/surname)
 - Password(based on name/surname)
 - Pick between md5 hashed password or plain text
-- Option to delete every user created by this plugin from database
+- Option to delete every user created by this plugin
+- Export generated users
 - Generate gender specific users
 
 Install:
