@@ -105,7 +105,7 @@ function test_user_interface() {
 			</div>
 			<br>
 			<div>
-				Number Of Users <input type="number" class="user_number" name="number_of_users" value="<?php if(!isset($_POST['number_of_users']) && !isset($_POST['clear_all'])){echo $get_number_of_users;} ?>">
+				Number Of Users <input type="number" maxlength="2000" class="user_number" name="number_of_users" value="<?php if(!isset($_POST['number_of_users']) && !isset($_POST['clear_all'])){echo $get_number_of_users;} ?>">
 			</div>
 			<br>
 			<div>
@@ -214,36 +214,48 @@ global $wpdb;
 	}			
 }
 
-$file_output = array();
-for ($i=0; $i < $_POST['number_of_users']; $i++) {
+if ($_POST['number_of_users'] < 2001) {
 
-	$user_name = generate_user_name();
-	$user_email = generate_user_email($user_name);
-	$user_password = generate_user_password($user_name);
+	$file_output = array();
+	for ($i=0; $i < $_POST['number_of_users']; $i++) {
 
-	// --- Write Users To File ---- //
-	array_push($file_output, $i . '. user name: '.$user_name."\r\n".'   user email: '.$user_email."\r\n".'   user password: '.$user_password."\r\n \r\n");
-	insert_user($user_name, $user_email, $user_password);
+		$user_name = generate_user_name();
+		$user_email = generate_user_email($user_name);
+		$user_password = generate_user_password($user_name);
+
+		// --- Write Users To File ---- //
+		array_push($file_output, $i . '. user name: '.$user_name."\r\n".'   user email: '.$user_email."\r\n".'   user password: '.$user_password."\r\n \r\n");
+		insert_user($user_name, $user_email, $user_password);
+		$user_count++;
+	}
+
+	if(isset($_POST['export_users']) && isset($_POST['generate_info'])) {
+
+		$timestamp = date("Y-m-d", time());
+
+		file_put_contents('../wp-content/plugins/wp-test-user/wp-test-users_'.$timestamp.'.txt', $file_output);
+		// Process download
+		$filepath = '../wp-content/plugins/wp-test-user/wp-test-users_'.$timestamp.'.txt';
+	    if(file_exists($filepath)) {
+	        header('Content-Description: Wp Uest User Output');
+	        header('Content-Type: application/octet-stream');
+	        header('Content-Disposition: attachment; filename="'.basename($filepath).'"');
+	        header('Expires: 0');
+	        header('Cache-Control: must-revalidate');
+	        header('Pragma: public');
+	        flush();
+	        readfile($filepath);
+	        exit;
+	    }
+	}
 }
-if(isset($_POST['export_users']) && isset($_POST['generate_info'])) {
-
-	$timestamp = date("Y-m-d", time());
-
-	file_put_contents('../wp-content/plugins/wp-test-user/wp-test-users_'.$timestamp.'.txt', $file_output);
-	// Process download
-	$filepath = '../wp-content/plugins/wp-test-user/wp-test-users_'.$timestamp.'.txt';
-    if(file_exists($filepath)) {
-        header('Content-Description: Wp Uest User Output');
-        header('Content-Type: application/octet-stream');
-        header('Content-Disposition: attachment; filename="'.basename($filepath).'"');
-        header('Expires: 0');
-        header('Cache-Control: must-revalidate');
-        header('Pragma: public');
-        flush();
-        readfile($filepath);
-        exit;
-    }
+elseif ($_POST['number_of_users'] > 2000) {
+	echo '<div style="color:red; position:absolute; top: 371px; left: 192px; font-weight: bold;">';
+		echo '<p>ABORTED</p>';
+		echo '<p class="bold red">Cannot generate more than 2000 users at once.</p>';
+	echo '</div>';	
 }
+
 
 // ---- Delete Users ---- //
 function delete_created_users() {
@@ -259,10 +271,14 @@ global $wpdb;
 		}
 	}
 	foreach ($user_id_array as $user_id_key => $user_id) {
-		$wpdb->delete('wp_users', array( 'ID' => $user_id ));
+		$wpdb->delete('wp_users', array('ID' => $user_id));
 	}
 }
+
+//Run function 4 times to make sure db is cleaned properly
 if (isset($_POST['delete_all_users'])) {
-	delete_created_users();
+	for ($times=0; $times < 4; $times++) { 
+		delete_created_users();
+	}	
 }
 ?>
