@@ -105,7 +105,7 @@ function test_user_interface() {
 			</div>
 			<br>
 			<div>
-				Number Of Users <input type="number" maxlength="2000" class="user_number" name="number_of_users" value="<?php if(!isset($_POST['number_of_users']) && !isset($_POST['clear_all'])){echo $get_number_of_users;} ?>">
+				Number Of Users <input style="width: 77px;" type="number" maxlength="2000" class="user_number" name="number_of_users" value="<?php if(!isset($_POST['clear_all'])){echo $_POST['number_of_users'];} ?>">
 			</div>
 			<br>
 			<div>
@@ -118,8 +118,6 @@ function test_user_interface() {
 		</form>
 	<?php
 	echo '</div>';
-
-	update_option('user_number', $_POST['number_of_users']);
 }
 
 
@@ -248,9 +246,13 @@ if ($_POST['number_of_users'] < 2001) {
 	        exit;
 	    }
 	}
-}
-elseif ($_POST['number_of_users'] > 2000) {
-	echo '<div style="color:red; position:absolute; top: 371px; left: 192px; font-weight: bold;">';
+	if ($_POST['number_of_users'] == $i && $i !== 0 && !isset($_POST['clear_all'])) {
+		echo '<div style="color: green; position: absolute; top: 371px; left: 192px; font-weight: bold; margin-top: 30px;">';
+			echo $user_count . ' Users successfully added';
+		echo '</div>';
+	}
+}else {
+	echo '<div style="color: red; position: absolute; top: 371px; left: 192px; font-weight: bold;">';
 		echo '<p>ABORTED</p>';
 		echo '<p class="bold red">Cannot generate more than 2000 users at once.</p>';
 	echo '</div>';	
@@ -279,6 +281,11 @@ global $wpdb;
 if (isset($_POST['delete_all_users'])) {
 	for ($times=0; $times < 4; $times++) { 
 		delete_created_users();
-	}	
+	}
+	if ($times == 4) {
+		echo '<div style="color: green; position: absolute; top: 371px; left: 192px; font-weight: bold; margin-top: 44px;">';
+			echo '<p>All Test Users Successfully Deleted</p>';
+		echo '</div>';
+	}
 }
 ?>
