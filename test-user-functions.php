@@ -70,13 +70,13 @@ global $wpdb;
 }
 register_activation_hook(__FILE__, 'test_user_activation');
 
-function test_user_remove_database() {
+function test_user_deactivate() {
 global $wpdb;
     $table_name = 'test_user_names';
     $sql = "DROP TABLE IF EXISTS $table_name";
     $wpdb->query($sql);
 }
-register_deactivation_hook(__FILE__, 'test_user_remove_database');
+register_deactivation_hook(__FILE__, 'test_user_deactivate');
 
 
 // --- Admin interface ---- //
@@ -232,7 +232,7 @@ global $wpdb;
 		$wpdb->insert('wp_users', array(
 		    'user_login'  	=>  $names[0],
 		    'user_pass'     =>  $user_password,
-		    'user_nicename' =>  $names[0] . '_',
+		    'user_nicename' =>  $names[0] . '_*',
 		    'display_name'  =>  $names[0] . ' ' . $names[1],
 		    'user_email'    =>  $user_email
 		));
@@ -294,7 +294,7 @@ elseif ($_POST['number_of_users'] == 0 && !isset($_POST['clear_all']) && $_GET['
 }
 
 
-// // ---- Delete Users ---- //
+// ---- Delete Users ---- //
 function delete_created_users() {
 global $wpdb;
 
@@ -302,7 +302,7 @@ global $wpdb;
 
 	$user_id_array = array();
 	foreach ($get_all_first_names as $first_name_key => $first_name) {
-		$get_matched_user_id = $wpdb->get_results("SELECT ID FROM wp_users WHERE user_nicename = CONCAT('$first_name->user_name', '_')");
+		$get_matched_user_id = $wpdb->get_results("SELECT ID FROM wp_users WHERE user_nicename = CONCAT('$first_name->user_name', '_*')");
 		if (!empty($get_matched_user_id[0]->ID)) {
 			array_push($user_id_array, $get_matched_user_id[0]->ID);
 		}
