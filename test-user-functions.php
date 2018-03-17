@@ -277,18 +277,18 @@ if(isset($_POST['export_users']) && isset($_POST['generate_info'])) {
 
 //Check if loop went through all iterations, if yes display success message
 if ($_POST['number_of_users'] == $i && $i !== 0 && !isset($_POST['clear_all'])) {
-	echo '<div style="color: green; position: absolute; top: 371px; left: 192px; font-weight: bold; margin-top: 30px;">';
+	echo '<div style="color: green; position: absolute; top: 286px; left: 192px; font-weight: bold; margin-top: 30px;">';
 		echo $user_count . ' Users successfully added';
 	echo '</div>';
 }
 elseif ($_POST['number_of_users'] > 2001 && !isset($_POST['clear_all'])) {
-	echo '<div style="color: red; position: absolute; top: 371px; left: 192px; font-weight: bold;">';
+	echo '<div style="color: red; position: absolute; top: 286px; left: 192px; font-weight: bold;">';
 		echo '<p>ABORTED</p>';
 		echo '<p class="bold red">Cannot generate more than 2000 users at once.</p>';
 	echo '</div>';	
 }
-elseif ($_POST['number_of_users'] == 0 && !isset($_POST['clear_all']) && $GET_['page'] == 'wp-test-user_slug') {
-	echo '<div style="color: red; position: absolute; top: 371px; left: 192px; font-weight: bold;">';
+elseif ($_POST['number_of_users'] == 0 && !isset($_POST['clear_all']) && $_GET['page'] == 'wp-test-user_slug') {
+	echo '<div style="color: red; position: absolute; top: 286px; left: 192px; font-weight: bold; margin-top: 30px;">';
 		echo '<p class="bold red">Please select number of users</p>';
 	echo '</div>';
 }
@@ -318,7 +318,7 @@ if (isset($_POST['delete_all_users'])) {
 		delete_created_users();
 	}
 	if ($times == 4) {
-		echo '<div style="color: green; position: absolute; top: 371px; left: 192px; font-weight: bold; margin-top: 44px;">';
+		echo '<div style="color: green; position: absolute; top: 286px; left: 192px; font-weight: bold; margin-top: 30px;">';
 			echo '<p>All Test Users Successfully Deleted</p>';
 		echo '</div>';
 	}
