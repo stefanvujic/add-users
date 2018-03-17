@@ -287,10 +287,10 @@ elseif ($_POST['number_of_users'] > 2001 && !isset($_POST['clear_all'])) {
 		echo '<p class="bold red">Cannot generate more than 2000 users at once.</p>';
 	echo '</div>';	
 }
-elseif ($_POST['number_of_users'] == 0 && !isset($_POST['clear_all'])) {
+elseif ($_POST['number_of_users'] == 0 && !isset($_POST['clear_all']) && $GET_['page'] == 'wp-test-user_slug') {
 	echo '<div style="color: red; position: absolute; top: 371px; left: 192px; font-weight: bold;">';
 		echo '<p class="bold red">Please select number of users</p>';
-	echo '</div>';		
+	echo '</div>';
 }
 
 
