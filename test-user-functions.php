@@ -232,7 +232,7 @@ global $wpdb;
 		$wpdb->insert('wp_users', array(
 		    'user_login'  	=>  $names[0],
 		    'user_pass'     =>  $user_password,
-		    'user_nicename' =>  $names[0],
+		    'user_nicename' =>  $names[0] . '_',
 		    'display_name'  =>  $names[0] . ' ' . $names[1],
 		    'user_email'    =>  $user_email
 		));
@@ -302,7 +302,7 @@ global $wpdb;
 
 	$user_id_array = array();
 	foreach ($get_all_first_names as $first_name_key => $first_name) {
-		$get_matched_user_id = $wpdb->get_results("SELECT ID FROM wp_users WHERE user_nicename = '$first_name->user_name'");
+		$get_matched_user_id = $wpdb->get_results("SELECT ID FROM wp_users WHERE user_nicename = CONCAT('$first_name->user_name', '_')");
 		if (!empty($get_matched_user_id[0]->ID)) {
 			array_push($user_id_array, $get_matched_user_id[0]->ID);
 		}
