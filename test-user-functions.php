@@ -288,7 +288,7 @@ elseif ($_POST['number_of_users'] > 2001 && !isset($_POST['clear_all'])) {
 	echo '</div>';	
 }
 elseif ($_POST['number_of_users'] == 0 && !isset($_POST['clear_all']) && $_GET['page'] == 'wp-test-user_slug') {
-	echo '<div style="color: red; position: absolute; top: 316px; left: 192px; font-weight: bold; margin-top: 30px;">';
+	echo '<div style="color: red; position: absolute; top: 286px; left: 192px; font-weight: bold; margin-top: 30px;">';
 		echo '<p class="bold red">Please select number of users</p>';
 	echo '</div>';
 }
